@@ -33,24 +33,32 @@ If not installed, skip this step and proceed.
 
 ---
 
-<!-- ## Step 0.1: Task Tracking (BYO)
+## Step 0.1: Issue Tracking (Optionsv2)
 
-This is where you'd wire in your project's task tracking.
+Extract issue number from $ARGUMENTS and update GitHub project board.
 
-The original workflows used GitHub Projects v2 for issue lifecycle:
+**If $ARGUMENTS contains #NNN:**
 
-```bash
-# Parse $ARGUMENTS for issue number: #(\d+)
-ISSUE_NUMBER=<parsed>
-PROJECT_ID=$(gh project view <NUMBER> --owner <OWNER> --format json --jq '.id')
-ITEM_ID=$(gh issue view $ISSUE_NUMBER --repo <OWNER>/<REPO> --json projectItems --jq '.projectItems[0].id')
-field_updater.sh set-status "$PROJECT_ID" "$ITEM_ID" "Implementation"
-```
+1. Parse issue number:
+   ```bash
+   ISSUE_NUMBER=$(echo "$ARGUMENTS" | grep -oE '#[0-9]+' | head -1 | tr -d '#')
+   ```
 
-To add your own:
-- Create a project-level `.claude/commands/go-lite-noweb.md` that overrides this skill
-- Or add a pre-phase hook in your CLAUDE.md
--->
+2. Update project board to "Implementation":
+   ```bash
+   PROJECT_ID=$(gh project view 10 --owner t851029 --format json --jq '.id')
+   ITEM_ID=$(gh project item-list 10 --owner t851029 --limit 200 --format json \
+     | python3 -c "import json,sys; data=json.load(sys.stdin); matches=[i for i in data['items'] if i.get('content',{}).get('number')==$ISSUE_NUMBER]; print(matches[0]['id'] if matches else '')")
+   ~/.claude/skills/github-project-manager/scripts/field_updater.sh set-status "$PROJECT_ID" "$ITEM_ID" "Implementation" || true
+   ```
+
+3. Log: "Issue #$ISSUE_NUMBER tracked — will auto-close on PR merge"
+
+**If no issue number found:** Log "No issue number in $ARGUMENTS — skipping GitHub project updates" and continue.
+
+**This ISSUE_NUMBER is passed to the /push skill which will:**
+- Append `Closes #ISSUE_NUMBER` to PR body
+- Update project board to "Done" after merge
 
 ---
 
