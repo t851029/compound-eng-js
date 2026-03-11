@@ -18,8 +18,8 @@ export async function mergeJsonConfigAtKey(options: {
   const merged = {
     ...existing,
     [key]: {
-      ...incoming,
-      ...existingEntries, // existing user entries win on conflict
+      ...existingEntries,
+      ...incoming, // incoming plugin entries overwrite same-named servers
     },
   }
 

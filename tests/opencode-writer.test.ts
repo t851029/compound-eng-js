@@ -257,7 +257,7 @@ describe("writeOpenCodeBundle", () => {
 })
 
 describe("mergeJsonConfigAtKey", () => {
-  test("preserves existing user entries on conflict", async () => {
+  test("incoming plugin entries overwrite same-named servers", async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "json-merge-"))
     const configPath = path.join(tempDir, "opencode.json")
 
@@ -270,7 +270,7 @@ describe("mergeJsonConfigAtKey", () => {
     }
     await fs.writeFile(configPath, JSON.stringify(existingConfig, null, 2))
 
-    // Plugin tries to add its own server and override user-server
+    // Plugin syncs its servers, overwriting same-named entries
     await mergeJsonConfigAtKey({
       configPath,
       key: "mcp",
@@ -286,7 +286,7 @@ describe("mergeJsonConfigAtKey", () => {
     expect(merged.model).toBe("my-model")
     // Plugin server added
     expect(merged.mcp["plugin-server"]).toBeDefined()
-    // User's server NOT overwritten by plugin
-    expect(merged.mcp["user-server"].command[1]).toBe("user-srv")
+    // Plugin server overwrites same-named existing entry
+    expect(merged.mcp["user-server"].command[1]).toBe("plugin-override")
   })
 })
