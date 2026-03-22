@@ -20,6 +20,14 @@ OPENCODE_DIR="$HOME/.config/opencode/commands"
 
 mkdir -p "$OPENCODE_DIR"
 
+# Clean up old go-* workflow symlinks/files from previous versions
+for old in "$OPENCODE_DIR"/go-ham.md "$OPENCODE_DIR"/go-lite.md "$OPENCODE_DIR"/go-lite-noweb.md; do
+    if [ -e "$old" ] || [ -L "$old" ]; then
+        rm -f "$old"
+        echo "  Removed old: $(basename "$old")"
+    fi
+done
+
 echo "Setting up /go workflow skill for OpenCode..."
 echo "Linking from: $PLUGIN_DIR"
 echo "Linking into: $OPENCODE_DIR"

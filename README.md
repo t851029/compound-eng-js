@@ -151,7 +151,7 @@ description: /go with smoke tests
 # /go
 
 1. Load the `compound-engineering:go` skill using the Skill tool.
-2. After Phase 7 (Commit & Push), run: `python -m pytest tests/ -v`
+2. After the Push phase, run: `npm test` (or your project's test command)
 3. Pass $ARGUMENTS.
 ```
 
@@ -164,16 +164,17 @@ These workflows depend on skills from the compound-engineering plugin:
 | `ce:plan` | All modes | Creates plan file in docs/plans/ |
 | `ce:review` | All modes | Reviews implementation, creates todo files |
 | `ce:compound` | All modes (conditional) | Documents solutions in docs/solutions/ |
+| `ce:brainstorm` | All modes with -auto suffix | Autonomous brainstorm before planning |
 | `deepen-plan` | ham mode only | Web research to enhance the plan |
 | `git-worktree` | All modes | Creates isolated worktrees via worktree-manager.sh |
-| `agent-browser` | lite, ham modes (conditional) | Browser testing for dashboard changes |
+| `agent-browser` | lite, ham, bug modes (conditional) | Browser testing for frontend changes |
 
 Optional (not in compound-engineering, skip if absent):
 
 | Optional skill | Phase | Fallback behavior |
 |---------------|-------|------------------|
-| `ralph-loop` | Step 0 | Skipped, workflow continues |
-| `simplifycode` | Phase 5/6 | Skipped, code review done in Phase 3 |
+| `simplifycode` | Simplify Code phase | Skipped, code review covers quality |
+| `push` | Push phase | Falls back to git add/commit/push/gh pr create |
 
 ## License
 
