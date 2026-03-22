@@ -1,24 +1,79 @@
 # Changelog
 
+This file is no longer the canonical changelog for compound-engineering releases.
+
+Historical entries are preserved below, but new release history is recorded in the root [`CHANGELOG.md`](../../CHANGELOG.md).
+
 All notable changes to the compound-engineering plugin will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.39.0] - 2026-03-21
+## [2.48.0](https://github.com/EveryInc/compound-engineering-plugin/compare/compound-engineering-v2.47.0...compound-engineering-v2.48.0) (2026-03-22)
 
-### Changed
-- **Unified /go workflow skill** — Replaced three separate skills (go-ham, go-lite, go-lite-noweb) with a single `/go` skill that accepts a mode parameter (`ham`, `lite`, `lite-noweb`, `bug`, `bug-parallel`)
-- Added `-auto` suffix support for autonomous brainstorm on any mode
-- Added auto-detection for test command (npm, pytest, rspec, go test, cargo test, make test) and frontend directory
-- Added config override via `compound-engineering.local.md` frontmatter (`test_command`, `frontend_dir`)
-- Removed all hardcoded project-specific references (usernames, repos, auth scripts)
-- Added BYO task tracking documentation with GitHub Projects v2 example template
+
+### Features
+
+* **git-worktree:** auto-trust mise and direnv configs in new worktrees ([#312](https://github.com/EveryInc/compound-engineering-plugin/issues/312)) ([cfbfb67](https://github.com/EveryInc/compound-engineering-plugin/commit/cfbfb6710a846419cc07ad17d9dbb5b5a065801c))
+* make skills platform-agnostic across coding agents ([#330](https://github.com/EveryInc/compound-engineering-plugin/issues/330)) ([52df90a](https://github.com/EveryInc/compound-engineering-plugin/commit/52df90a16688ee023bbdb203969adcc45d7d2ba2))
+
+## [2.47.0](https://github.com/EveryInc/compound-engineering-plugin/compare/compound-engineering-v2.46.0...compound-engineering-v2.47.0) (2026-03-20)
+
+
+### Features
+
+* improve `repo-research-analyst` by adding a structured technology scan ([#327](https://github.com/EveryInc/compound-engineering-plugin/issues/327)) ([1c28d03](https://github.com/EveryInc/compound-engineering-plugin/commit/1c28d0321401ad50a51989f5e6293d773ac1a477))
+
+
+### Bug Fixes
+
+* **skills:** update ralph-wiggum references to ralph-loop in lfg/slfg ([#324](https://github.com/EveryInc/compound-engineering-plugin/issues/324)) ([ac756a2](https://github.com/EveryInc/compound-engineering-plugin/commit/ac756a267c5e3d5e4ceb2f99939dbb93491ac4d2))
+
+## [2.46.0](https://github.com/EveryInc/compound-engineering-plugin/compare/compound-engineering-v2.45.0...compound-engineering-v2.46.0) (2026-03-20)
+
+
+### Features
+
+* add optional high-level technical design to plan-beta skills ([#322](https://github.com/EveryInc/compound-engineering-plugin/issues/322)) ([3ba4935](https://github.com/EveryInc/compound-engineering-plugin/commit/3ba4935926b05586da488119f215057164d97489))
+
+## [2.45.0](https://github.com/EveryInc/compound-engineering-plugin/compare/compound-engineering-v2.44.0...compound-engineering-v2.45.0) (2026-03-19)
+
+
+### Features
+
+* edit resolve_todos_parallel skill for complete todo lifecycle ([#292](https://github.com/EveryInc/compound-engineering-plugin/issues/292)) ([88c89bc](https://github.com/EveryInc/compound-engineering-plugin/commit/88c89bc204c928d2f36e2d1f117d16c998ecd096))
+* integrate claude code auto memory as supplementary data source for ce:compound and ce:compound-refresh ([#311](https://github.com/EveryInc/compound-engineering-plugin/issues/311)) ([5c1452d](https://github.com/EveryInc/compound-engineering-plugin/commit/5c1452d4cc80b623754dd6fe09c2e5b6ae86e72e))
+
+## [2.44.0](https://github.com/EveryInc/compound-engineering-plugin/compare/compound-engineering-v2.43.0...compound-engineering-v2.44.0) (2026-03-18)
+
+
+### Features
+
+* **plugin:** add execution posture signaling to ce:plan-beta and ce:work ([#309](https://github.com/EveryInc/compound-engineering-plugin/issues/309)) ([748f72a](https://github.com/EveryInc/compound-engineering-plugin/commit/748f72a57f713893af03a4d8ed69c2311f492dbd))
+
+## [2.39.0] - 2026-03-10
+
+### Added
+
+- **ce:compound context budget precheck** — Warns when context is constrained and offers compact-safe mode to avoid compaction mid-compound ([#235](https://github.com/EveryInc/compound-engineering-plugin/pull/235))
+- **ce:plan daily sequence numbers** — Plan filenames now include a 3-digit daily sequence number (e.g., `2026-03-10-001-feat-...`) to prevent collisions ([#238](https://github.com/EveryInc/compound-engineering-plugin/pull/238))
+- **ce:review serial mode** — Pass `--serial` flag (or auto-detects when 6+ agents configured) to run review agents sequentially, preventing context limit crashes ([#237](https://github.com/EveryInc/compound-engineering-plugin/pull/237))
+- **agent-browser inspection & debugging commands** — Added JS eval, console/errors, network, storage, device emulation, element debugging, recording/tracing, tabs, and advanced mouse commands to agent-browser skill ([#236](https://github.com/EveryInc/compound-engineering-plugin/pull/236))
+- **test-browser port detection** — Auto-detects dev server port from CLAUDE.md, package.json, or .env files; supports `--port` flag ([#233](https://github.com/EveryInc/compound-engineering-plugin/pull/233))
+- **lfg phase gating** — Added explicit GATE checks between /lfg steps to enforce plan-before-work ordering ([#231](https://github.com/EveryInc/compound-engineering-plugin/pull/231))
+
+### Fixed
+
+- **Context7 API key auth** — MCP server config now passes `CONTEXT7_API_KEY` via `x-api-key` header to avoid anonymous rate limits ([#232](https://github.com/EveryInc/compound-engineering-plugin/pull/232))
+- **CLI: MCP server merge order** — `sync` now correctly overwrites same-named MCP servers with plugin values instead of preserving stale entries
 
 ### Removed
-- `go-ham` skill (replaced by `/go ham`)
-- `go-lite` skill (replaced by `/go lite`)
-- `go-lite-noweb` skill (replaced by `/go lite-noweb`)
+
+- **every-style-editor agent** — Removed duplicate agent; functionality already exists as `every-style-editor` skill ([#234](https://github.com/EveryInc/compound-engineering-plugin/pull/234))
+
+### Contributors
+
+- Matt Van Horn ([@mvanhorn](https://x.com/mvanhorn)) — PRs #231–#238
 
 ---
 

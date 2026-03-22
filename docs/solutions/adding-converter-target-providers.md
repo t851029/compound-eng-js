@@ -650,13 +650,12 @@ Use this checklist when adding a new target provider:
 ### Documentation
 - [ ] Create `docs/specs/{target}.md` with format specification
 - [ ] Update `README.md` with target in list and usage examples
-- [ ] Update `CHANGELOG.md` with new target
+- [ ] Do not hand-add release notes; release automation owns GitHub release notes and release-owned versions
 
 ### Version Bumping
-- [ ] Use a `feat(...)` conventional commit so semantic-release cuts the next minor root CLI release on `main`
-- [ ] Do not hand-start a separate root CLI version line in `package.json`; the root package follows the repo `v*` tags and semantic-release writes that version back after release
-- [ ] Update plugin.json description if component counts changed
-- [ ] Verify CHANGELOG entry is clear
+- [ ] Use a conventional `feat:` or `fix:` title so release automation can infer the right bump
+- [ ] Do not hand-start or hand-bump release-owned version lines in `package.json` or plugin manifests
+- [ ] Run `bun run release:validate` if component counts or descriptions changed
 
 ---
 
@@ -687,7 +686,7 @@ Use this checklist when adding a new target provider:
 
 ## Related Files
 
-- `/C:/Source/compound-engineering-plugin/.claude-plugin/plugin.json` — Version and component counts
-- `/C:/Source/compound-engineering-plugin/CHANGELOG.md` — Recent additions and patterns
-- `/C:/Source/compound-engineering-plugin/README.md` — Usage examples for all targets
-- `/C:/Source/compound-engineering-plugin/docs/solutions/plugin-versioning-requirements.md` — Checklist for releases
+- `plugins/compound-engineering/.claude-plugin/plugin.json` — Version and component counts
+- `CHANGELOG.md` — Pointer to canonical GitHub release history
+- `README.md` — Usage examples for all targets
+- `docs/solutions/plugin-versioning-requirements.md` — Checklist for releases
