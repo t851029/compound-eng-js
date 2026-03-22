@@ -1,0 +1,42 @@
+name: Sync upstream compound-engineering
+
+on:
+  schedule:
+    - cron: '0 9 */2 * *' # Every other day at 9am UTC
+  workflow_dispatch: # Manual trigger from GitHub UI
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/EveryInc/compound-engineering-plugin.git || true
+          git fetch upstream main
+
+      - name: Check for new commits
+        id: check
+        run: |
+          BEHIND=$(git rev-list HEAD..upstream/main --count)
+          echo "behind=$BEHIND" >> "$GITHUB_OUTPUT"
+          echo "Upstream is $BEHIND commits ahead"
+
+      - name: Merge upstream
+        if: steps.check.outputs.behind != '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git merge upstream/main --no-edit || {
+            echo "::error::Merge conflict! Manual resolution needed."
+            git merge --abort
+            exit 1
+          }
+
+      - name: Push if merged
+        if: steps.check.outputs.behind != '0'
+        run: git push origin main
