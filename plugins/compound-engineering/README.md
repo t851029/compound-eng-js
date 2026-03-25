@@ -6,7 +6,7 @@ AI-powered development tools that get smarter with every use. Make each unit of 
 
 | Component | Count |
 |-----------|-------|
-| Agents | 25+ |
+| Agents | 35+ |
 | Skills | 40+ |
 | MCP Servers | 1 |
 
@@ -19,20 +19,39 @@ Agents are organized into categories for easier discovery.
 | Agent | Description |
 |-------|-------------|
 | `agent-native-reviewer` | Verify features are agent-native (action + context parity) |
+| `api-contract-reviewer` | Detect breaking API contract changes |
 | `architecture-strategist` | Analyze architectural decisions and compliance |
 | `code-simplicity-reviewer` | Final pass for simplicity and minimalism |
+| `correctness-reviewer` | Logic errors, edge cases, state bugs |
 | `data-integrity-guardian` | Database migrations and data integrity |
 | `data-migration-expert` | Validate ID mappings match production, check for swapped values |
+| `data-migrations-reviewer` | Migration safety with confidence calibration |
 | `deployment-verification-agent` | Create Go/No-Go deployment checklists for risky data changes |
 | `dhh-rails-reviewer` | Rails review from DHH's perspective |
 | `julik-frontend-races-reviewer` | Review JavaScript/Stimulus code for race conditions |
 | `kieran-rails-reviewer` | Rails code review with strict conventions |
 | `kieran-python-reviewer` | Python code review with strict conventions |
 | `kieran-typescript-reviewer` | TypeScript code review with strict conventions |
+| `maintainability-reviewer` | Coupling, complexity, naming, dead code |
 | `pattern-recognition-specialist` | Analyze code for patterns and anti-patterns |
 | `performance-oracle` | Performance analysis and optimization |
+| `performance-reviewer` | Runtime performance with confidence calibration |
+| `reliability-reviewer` | Production reliability and failure modes |
 | `schema-drift-detector` | Detect unrelated schema.rb changes in PRs |
+| `security-reviewer` | Exploitable vulnerabilities with confidence calibration |
 | `security-sentinel` | Security audits and vulnerability assessments |
+| `testing-reviewer` | Test coverage gaps, weak assertions |
+
+### Document Review
+
+| Agent | Description |
+|-------|-------------|
+| `coherence-reviewer` | Review documents for internal consistency, contradictions, and terminology drift |
+| `design-lens-reviewer` | Review plans for missing design decisions, interaction states, and AI slop risk |
+| `feasibility-reviewer` | Evaluate whether proposed technical approaches will survive contact with reality |
+| `product-lens-reviewer` | Challenge problem framing, evaluate scope decisions, surface goal misalignment |
+| `scope-guardian-reviewer` | Challenge unjustified complexity, scope creep, and premature abstractions |
+| `security-lens-reviewer` | Evaluate plans for security gaps at the plan level (auth, data, APIs) |
 
 ### Research
 
@@ -78,8 +97,8 @@ Core workflow commands use `ce:` prefix to unambiguously identify them as compou
 |---------|-------------|
 | `/ce:ideate` | Discover high-impact project improvements through divergent ideation and adversarial filtering |
 | `/ce:brainstorm` | Explore requirements and approaches before planning |
-| `/ce:plan` | Create implementation plans |
-| `/ce:review` | Run comprehensive code reviews |
+| `/ce:plan` | Transform features into structured implementation plans grounded in repo patterns |
+| `/ce:review` | Structured code review with tiered persona agents, confidence gating, and dedup pipeline |
 | `/ce:work` | Execute work items systematically |
 | `/ce:compound` | Document solved problems to compound team knowledge |
 | `/ce:compound-refresh` | Refresh stale or drifting learnings and decide whether to keep, update, replace, or archive them |
@@ -97,8 +116,8 @@ Core workflow commands use `ce:` prefix to unambiguously identify them as compou
 | `/report-bug-ce` | Report a bug in the compound-engineering plugin |
 | `/reproduce-bug` | Reproduce bugs using logs and console |
 | `/resolve-pr-parallel` | Resolve PR comments in parallel |
-| `/resolve-todo-parallel` | Resolve todos in parallel |
-| `/triage` | Triage and prioritize issues |
+| `/todo-resolve` | Resolve todos in parallel |
+| `/todo-triage` | Triage and prioritize pending todos |
 | `/test-browser` | Run browser tests on PR-affected pages |
 | `/test-xcode` | Build and test iOS apps on simulator |
 | `/feature-video` | Record video walkthroughs and add to PR description |
@@ -126,9 +145,9 @@ Core workflow commands use `ce:` prefix to unambiguously identify them as compou
 
 | Skill | Description |
 |-------|-------------|
-| `document-review` | Improve documents through structured self-review |
+| `document-review` | Review documents using parallel persona agents for role-specific feedback |
 | `every-style-editor` | Review copy for Every's style guide compliance |
-| `file-todos` | File-based todo tracking system |
+| `todo-create` | File-based todo tracking system |
 | `git-worktree` | Manage Git worktrees for parallel development |
 | `proof` | Create, edit, and share documents via Proof collaborative editor |
 | `claude-permissions-optimizer` | Optimize Claude Code permissions from session history |
@@ -152,17 +171,6 @@ Core workflow commands use `ce:` prefix to unambiguously identify them as compou
 | Skill | Description |
 |-------|-------------|
 | `agent-browser` | CLI-based browser automation using Vercel's agent-browser |
-
-### Beta Skills
-
-Experimental versions of core workflow skills. These are being tested before replacing their stable counterparts. They work standalone but are not yet wired into the automated `lfg`/`slfg` orchestration.
-
-| Skill | Description | Replaces |
-|-------|-------------|----------|
-| `ce:plan-beta` | Decision-first planning focused on boundaries, sequencing, and verification | `ce:plan` |
-| `deepen-plan-beta` | Selective stress-test that targets weak sections with research | `deepen-plan` |
-
-To test: invoke `/ce:plan-beta` or `/deepen-plan-beta` directly. Plans produced by the beta skills are compatible with `/ce:work`.
 
 ### Image Generation
 
