@@ -73,7 +73,7 @@ Routing rules:
 
 ## Reviewers
 
-8 personas in two tiers, plus CE-specific agents. See [persona-catalog.md](./references/persona-catalog.md) for the full catalog.
+15 reviewer personas in layered conditionals, plus CE-specific agents. See the persona catalog included below for the full catalog.
 
 **Always-on (every review):**
 
@@ -82,10 +82,11 @@ Routing rules:
 | `compound-engineering:review:correctness-reviewer` | Logic errors, edge cases, state bugs, error propagation |
 | `compound-engineering:review:testing-reviewer` | Coverage gaps, weak assertions, brittle tests |
 | `compound-engineering:review:maintainability-reviewer` | Coupling, complexity, naming, dead code, abstraction debt |
+| `compound-engineering:review:project-standards-reviewer` | CLAUDE.md and AGENTS.md compliance -- frontmatter, references, naming, portability |
 | `compound-engineering:review:agent-native-reviewer` | Verify new features are agent-accessible |
 | `compound-engineering:research:learnings-researcher` | Search docs/solutions/ for past issues related to this PR |
 
-**Conditional (selected per diff):**
+**Cross-cutting conditional (selected per diff):**
 
 | Agent | Select when diff touches... |
 |-------|---------------------------|
@@ -94,6 +95,17 @@ Routing rules:
 | `compound-engineering:review:api-contract-reviewer` | Routes, serializers, type signatures, versioning |
 | `compound-engineering:review:data-migrations-reviewer` | Migrations, schema changes, backfills |
 | `compound-engineering:review:reliability-reviewer` | Error handling, retries, timeouts, background jobs |
+| `compound-engineering:review:adversarial-reviewer` | Diff >=50 changed non-test/non-generated/non-lockfile lines, or auth, payments, data mutations, external APIs |
+
+**Stack-specific conditional (selected per diff):**
+
+| Agent | Select when diff touches... |
+|-------|---------------------------|
+| `compound-engineering:review:dhh-rails-reviewer` | Rails architecture, service objects, session/auth choices, or Hotwire-vs-SPA boundaries |
+| `compound-engineering:review:kieran-rails-reviewer` | Rails application code where conventions, naming, and maintainability are in play |
+| `compound-engineering:review:kieran-python-reviewer` | Python modules, endpoints, scripts, or services |
+| `compound-engineering:review:kieran-typescript-reviewer` | TypeScript components, services, hooks, utilities, or shared types |
+| `compound-engineering:review:julik-frontend-races-reviewer` | Stimulus/Turbo controllers, DOM events, timers, animations, or async UI flows |
 
 **CE conditional (migration-specific):**
 
@@ -104,7 +116,7 @@ Routing rules:
 
 ## Review Scope
 
-Every review spawns all 3 always-on personas plus the 2 CE always-on agents, then adds applicable conditionals. The tier model naturally right-sizes: a small config change triggers 0 conditionals = 5 reviewers. A large auth feature triggers security + maybe reliability = 7 reviewers.
+Every review spawns all 4 always-on personas plus the 2 CE always-on agents, then adds whichever cross-cutting and stack-specific conditionals fit the diff. The model naturally right-sizes: a small config change triggers 0 conditionals = 6 reviewers. A Rails auth feature might trigger security + reliability + kieran-rails + dhh-rails = 10 reviewers.
 
 ## Protected Artifacts
 
@@ -314,7 +326,9 @@ Pass this to every reviewer in their spawn prompt. Intent shapes *how hard each 
 
 ### Stage 3: Select reviewers
 
-Read the diff and file list from Stage 1. The 3 always-on personas and 2 CE always-on agents are automatic. For each conditional persona in [persona-catalog.md](./references/persona-catalog.md), decide whether the diff warrants it. This is agent judgment, not keyword matching.
+Read the diff and file list from Stage 1. The 4 always-on personas and 2 CE always-on agents are automatic. For each cross-cutting and stack-specific conditional persona in the persona catalog included below, decide whether the diff warrants it. This is agent judgment, not keyword matching.
+
+Stack-specific personas are additive. A Rails UI change may warrant `kieran-rails` plus `julik-frontend-races`; a TypeScript API diff may warrant `kieran-typescript` plus `api-contract` and `reliability`.
 
 For CE conditional agents, check if the diff includes files matching `db/migrate/*.rb`, `db/schema.rb`, or data backfill scripts.
 
@@ -325,29 +339,42 @@ Review team:
 - correctness (always)
 - testing (always)
 - maintainability (always)
+- project-standards (always)
 - agent-native-reviewer (always)
 - learnings-researcher (always)
 - security -- new endpoint in routes.rb accepts user-provided redirect URL
+- kieran-rails -- controller and Turbo flow changed in app/controllers and app/views
+- dhh-rails -- diff adds service objects around ordinary Rails CRUD
 - data-migrations -- adds migration 20260303_add_index_to_orders
 - schema-drift-detector -- migration files present
 ```
 
 This is progress reporting, not a blocking confirmation.
 
+### Stage 3b: Discover project standards paths
+
+Before spawning sub-agents, find the file paths (not contents) of all relevant standards files for the `project-standards` persona. Use the native file-search/glob tool to locate:
+
+1. Use the native file-search tool (e.g., Glob in Claude Code) to find all `**/CLAUDE.md` and `**/AGENTS.md` in the repo.
+2. Filter to those whose directory is an ancestor of at least one changed file. A standards file governs all files below it (e.g., `plugins/compound-engineering/AGENTS.md` applies to everything under `plugins/compound-engineering/`).
+
+Pass the resulting path list to the `project-standards` persona inside a `<standards-paths>` block in its review context (see Stage 4). The persona reads the files itself, targeting only the sections relevant to the changed file types. This keeps the orchestrator's work cheap (path discovery only) and avoids bloating the subagent prompt with content the reviewer may not fully need.
+
 ### Stage 4: Spawn sub-agents
 
-Spawn each selected persona reviewer as a parallel sub-agent using the template in [subagent-template.md](./references/subagent-template.md). Each persona sub-agent receives:
+Spawn each selected persona reviewer as a parallel sub-agent using the subagent template included below. Each persona sub-agent receives:
 
 1. Their persona file content (identity, failure modes, calibration, suppress conditions)
-2. Shared diff-scope rules from [diff-scope.md](./references/diff-scope.md)
-3. The JSON output contract from [findings-schema.json](./references/findings-schema.json)
+2. Shared diff-scope rules from the diff-scope reference included below
+3. The JSON output contract from the findings schema included below
 4. Review context: intent summary, file list, diff
+5. **For `project-standards` only:** the standards file path list from Stage 3b, wrapped in a `<standards-paths>` block appended to the review context
 
 Persona sub-agents are **read-only**: they review and return structured JSON. They do not edit files or propose refactors.
 
 Read-only here means **non-mutating**, not "no shell access." Reviewer sub-agents may use non-mutating inspection commands when needed to gather evidence or verify scope, including read-oriented `git` / `gh` usage such as `git diff`, `git show`, `git blame`, `git log`, and `gh pr view`. They must not edit files, change branches, commit, push, create PRs, or otherwise mutate the checkout or repository state.
 
-Each persona sub-agent returns JSON matching [findings-schema.json](./references/findings-schema.json):
+Each persona sub-agent returns JSON matching the findings schema included below:
 
 ```json
 {
@@ -381,7 +408,7 @@ Convert multiple reviewer JSON payloads into one deduplicated, confidence-gated 
 
 ### Stage 6: Synthesize and present
 
-Assemble the final report using the template in [review-output-template.md](./references/review-output-template.md):
+Assemble the final report using the review output template included below:
 
 1. **Header.** Scope, intent, mode, reviewer team with per-conditional justifications.
 2. **Findings.** Grouped by severity (P0, P1, P2, P3). Each finding shows file, issue, reviewer(s), confidence, and synthesized route.
@@ -408,9 +435,11 @@ Before delivering the review, verify:
 5. **Protected artifacts are respected.** Discard any findings that recommend deleting or gitignoring files in `docs/brainstorms/`, `docs/plans/`, or `docs/solutions/`.
 6. **Findings don't duplicate linter output.** Don't flag things the project's linter/formatter would catch (missing semicolons, wrong indentation). Focus on semantic issues.
 
-## Language-Agnostic
+## Language-Aware Conditionals
 
-This skill does NOT use language-specific reviewer agents. Persona reviewers adapt their criteria to the language/framework based on project context (loaded automatically). This keeps the skill simple and avoids maintaining parallel reviewers per language.
+This skill uses stack-specific reviewer agents when the diff clearly warrants them. Keep those agents opinionated. They are not generic language checkers; they add a distinct review lens on top of the always-on and cross-cutting personas.
+
+Do not spawn them mechanically from file extensions alone. The trigger is meaningful changed behavior, architecture, or UI state in that stack.
 
 ## After Review
 
@@ -501,3 +530,27 @@ If "Push fixes": push the branch with `git push` to update the existing PR.
 ## Fallback
 
 If the platform doesn't support parallel sub-agents, run reviewers sequentially. Everything else (stages, output format, merge pipeline) stays the same.
+
+---
+
+## Included References
+
+### Persona Catalog
+
+@./references/persona-catalog.md
+
+### Subagent Template
+
+@./references/subagent-template.md
+
+### Diff Scope Rules
+
+@./references/diff-scope.md
+
+### Findings Schema
+
+@./references/findings-schema.json
+
+### Review Output Template
+
+@./references/review-output-template.md

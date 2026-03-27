@@ -67,13 +67,22 @@ When adding or modifying skills, verify compliance with the skill spec:
 
 - [ ] `name:` present and matches directory name (lowercase-with-hyphens)
 - [ ] `description:` present and describes **what it does and when to use it** (per official spec: "Explains code with diagrams. Use when exploring how code works.")
+- [ ] `description:` value is quoted (single or double) if it contains colons -- unquoted colons break `js-yaml` strict parsing and crash `install --to opencode/codex`. Run `bun test tests/frontmatter.test.ts` to verify.
 
-### Reference Links (Required if references/ exists)
+### Reference File Inclusion (Required if references/ exists)
 
-- [ ] All files in `references/` are linked as `[filename.md](./references/filename.md)`
-- [ ] All files in `assets/` are linked as `[filename](./assets/filename)`
-- [ ] All files in `scripts/` are linked as `[filename](./scripts/filename)`
-- [ ] No bare backtick references like `` `references/file.md` `` - use proper markdown links
+- [ ] Do NOT use markdown links like `[filename.md](./references/filename.md)` -- agents interpret these as Read instructions with CWD-relative paths, which fail because the CWD is never the skill directory
+- [ ] **Default: use backtick paths.** Most reference files should be referenced with backtick paths so the agent can load them on demand:
+  ```
+  `references/architecture-patterns.md`
+  ```
+  This keeps the skill lean and avoids inflating the token footprint at load time. Use for: large reference docs, routing-table targets, code scaffolds, executable scripts/templates
+- [ ] **Exception: `@` inline for small structural files** that the skill cannot function without and that are under ~150 lines (schemas, output contracts, subagent dispatch templates). Use `@` file inclusion on its own line:
+  ```
+  @./references/schema.json
+  ```
+  This resolves relative to the SKILL.md and substitutes content before the model sees it. If a file is over ~150 lines, prefer a backtick path even if it is always needed
+- [ ] For files the agent needs to *execute* (scripts, shell templates), always use backtick paths -- `@` would inline the script as text content instead of keeping it as an executable file
 
 ### Writing Style
 
@@ -95,7 +104,7 @@ When adding or modifying skills, verify compliance with the skill spec:
 
 - [ ] In bash code blocks, reference co-located scripts using relative paths (e.g., `bash scripts/my-script ARG`) — not `${CLAUDE_PLUGIN_ROOT}` or other platform-specific variables
 - [ ] All platforms resolve script paths relative to the skill's directory; no env var prefix is needed
-- [ ] Always also include a markdown link to the script (e.g., `[scripts/my-script](scripts/my-script)`) so the agent can locate and read it
+- [ ] Reference the script with a backtick path (e.g., `` `scripts/my-script` ``) so agents can locate it; a markdown link is not needed since the bash code block already provides the invocation
 
 ### Cross-Platform Reference Rules
 
@@ -104,7 +113,7 @@ This plugin is authored once, then converted for other agent platforms. Commands
 - [ ] Because of that, slash references inside command or agent content are acceptable when they point to real published commands; target-specific conversion can remap them.
 - [ ] Inside a pass-through `SKILL.md`, do not assume slash references will be remapped for another platform. Write references according to what will still make sense after the skill is copied as-is.
 - [ ] When one skill refers to another skill, prefer semantic wording such as "load the `document-review` skill" rather than slash syntax.
-- [ ] Use slash syntax only when referring to an actual published command or workflow such as `/ce:work` or `/deepen-plan`.
+- [ ] Use slash syntax only when referring to an actual published command or workflow such as `/ce:work` or `/ce:compound`.
 
 ### Tool Selection in Agents and Skills
 
@@ -114,16 +123,19 @@ Why: shell-heavy exploration causes avoidable permission prompts in sub-agent wo
 
 - [ ] Never instruct agents to use `find`, `ls`, `cat`, `head`, `tail`, `grep`, `rg`, `wc`, or `tree` through a shell for routine file discovery, content search, or file reading
 - [ ] Describe tools by capability class with platform hints — e.g., "Use the native file-search/glob tool (e.g., Glob in Claude Code)" — not by Claude Code-specific tool names alone
-- [ ] When shell is the only option (e.g., `ast-grep`, `bundle show`, git commands), instruct one simple command at a time — no chaining (`&&`, `||`, `;`), pipes, or redirects
+- [ ] When shell is the only option (e.g., `ast-grep`, `bundle show`, git commands), instruct one simple command at a time — no chaining (`&&`, `||`, `;`) and no error suppression (`2>/dev/null`, `|| true`). Simple pipes (e.g., `| jq .field`) and output redirection (e.g., `> file`) are acceptable when they don't obscure failures
 - [ ] Do not encode shell recipes for routine exploration when native tools can do the job; encode intent and preferred tool classes instead
 - [ ] For shell-only workflows (e.g., `gh`, `git`, `bundle show`, project CLIs), explicit command examples are acceptable when they are simple, task-scoped, and not chained together
+
+### Passing Reference Material to Sub-Agents
+
+When a skill orchestrates sub-agents that need codebase reference material, prefer passing file paths over file contents. The sub-agent reads only what it needs. Content-passing is fine for small, static material consumed in full (e.g., a JSON schema under ~50 lines).
 
 ### Quick Validation Command
 
 ```bash
-# Check for unlinked references in a skill
-grep -E '`(references|assets|scripts)/[^`]+`' skills/*/SKILL.md
-# Should return nothing if all refs are properly linked
+# Check for broken markdown link references (should return nothing)
+grep -E '\[.*\]\(\./references/|\[.*\]\(\./assets/|\[.*\]\(references/|\[.*\]\(assets/' skills/*/SKILL.md
 
 # Check description format - should describe what + when
 grep -E '^description:' skills/*/SKILL.md
@@ -136,11 +148,11 @@ grep -E '^description:' skills/*/SKILL.md
 
 ## Upstream-Sourced Skills
 
-Some skills are exact copies from external upstream repositories, vendored locally so the plugin is self-contained. Do not add local modifications -- sync from upstream instead.
+Some skills are exact copies from external upstream repositories, vendored locally so the plugin is self-contained. Prefer syncing from upstream, but apply the reference file inclusion rules from the skill compliance checklist after each sync -- upstream skills often use markdown links for references which break in plugin contexts.
 
-| Skill | Upstream |
-|-------|----------|
-| `agent-browser` | `github.com/vercel-labs/agent-browser` (`skills/agent-browser/SKILL.md`) |
+| Skill | Upstream | Local deviations |
+|-------|----------|------------------|
+| `agent-browser` | `github.com/vercel-labs/agent-browser` (`skills/agent-browser/SKILL.md`) | Markdown link refs replaced with backtick paths to fix CWD resolution bug (#374) |
 
 ## Beta Skills
 

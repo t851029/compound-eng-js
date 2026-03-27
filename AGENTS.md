@@ -77,8 +77,8 @@ cat plugins/compound-engineering/.claude-plugin/plugin.json | jq .
 
 ## Commit Conventions
 
-- Use conventional titles such as `feat: ...`, `fix: ...`, `docs: ...`, and `refactor: ...`.
-- Component scope is optional. Example: `feat(coding-tutor): add quiz reset`.
+- **Prefix is based on intent, not file type.** Use conventional prefixes (`feat:`, `fix:`, `docs:`, `refactor:`, etc.) but classify by what the change does, not the file extension. Files under `plugins/*/skills/`, `plugins/*/agents/`, and `.claude-plugin/` are product code even though they are Markdown or JSON. Reserve `docs:` for files whose sole purpose is documentation (`README.md`, `docs/`, `CHANGELOG.md`).
+- **Include a component scope.** The scope appears verbatim in the changelog. Pick the narrowest useful label: skill/agent name (`document-review`, `learnings-researcher`), plugin or CLI area (`coding-tutor`, `cli`), or shared area when cross-cutting (`review`, `research`, `converters`). Never use `compound-engineering` — it's the entire plugin and tells the reader nothing. Omit scope only when no single label adds clarity.
 - Breaking changes must be explicit with `!` or a breaking-change footer so release automation can classify them correctly.
 
 ## Adding a New Target Provider
@@ -123,3 +123,13 @@ This prevents resolution failures when the plugin is installed alongside other p
 - **Plans** live in `docs/plans/` — implementation plans and progress tracking.
 - **Solutions** live in `docs/solutions/` — documented decisions and patterns.
 - **Specs** live in `docs/specs/` — target platform format specifications.
+
+### Solution categories (`docs/solutions/`)
+
+This repo builds a plugin *for* developers. Categorize solutions from the perspective of the end user (a developer using the plugin), not a contributor to this repo.
+
+- **`developer-experience/`** — Issues with contributing to *this repo*: local dev setup, shell aliases, test ergonomics, CI friction. If the fix only matters to someone with a checkout of this repo, it belongs here.
+- **`integrations/`** — Issues where plugin output doesn't work correctly on a target platform or OS. Cross-platform bugs, target writer output problems, and converter compatibility issues go here.
+- **`workflow/`**, **`skill-design/`** — Plugin skill and agent design patterns, workflow improvements.
+
+When in doubt: if the bug affects someone running `bun install compound-engineering` or `bun convert`, it's an integration or product issue, not developer-experience.
