@@ -9,6 +9,32 @@ All notable changes to the compound-engineering plugin will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.63.0](https://github.com/EveryInc/compound-engineering-plugin/compare/compound-engineering-v2.62.1...compound-engineering-v2.63.0) (2026-04-06)
+
+
+### Features
+
+* **ce-plan,ce-brainstorm:** universal planning and brainstorming for non-software tasks ([#519](https://github.com/EveryInc/compound-engineering-plugin/issues/519)) ([320a045](https://github.com/EveryInc/compound-engineering-plugin/commit/320a04524142830a40a44bd72c4bf5d30931221c))
+* **slack-researcher:** add Slack organizational context research agent ([#495](https://github.com/EveryInc/compound-engineering-plugin/issues/495)) ([b3960ec](https://github.com/EveryInc/compound-engineering-plugin/commit/b3960ec64b212d1c8f3885370762e0f124354c28))
+
+
+### Bug Fixes
+
+* **document-review:** add recursion guard to reviewer subagent template ([#523](https://github.com/EveryInc/compound-engineering-plugin/issues/523)) ([36d8119](https://github.com/EveryInc/compound-engineering-plugin/commit/36d811916637b3436aafd548319e077b6248bae3))
+* **review,work:** omit mode parameter in subagent dispatch to respect user permissions ([#522](https://github.com/EveryInc/compound-engineering-plugin/issues/522)) ([949bdef](https://github.com/EveryInc/compound-engineering-plugin/commit/949bdef909ea71e9c5b885e31c028809f0f25017))
+* **slack-researcher:** make Slack research opt-in, surface workspace identity ([#521](https://github.com/EveryInc/compound-engineering-plugin/issues/521)) ([6f9069d](https://github.com/EveryInc/compound-engineering-plugin/commit/6f9069df7ac3551677f8f7a1cd7ad51946f88847))
+
+## [2.62.1](https://github.com/EveryInc/compound-engineering-plugin/compare/compound-engineering-v2.62.0...compound-engineering-v2.62.1) (2026-04-05)
+
+
+### Bug Fixes
+
+* **ce-brainstorm:** reduce token cost by extracting late-sequence content ([#511](https://github.com/EveryInc/compound-engineering-plugin/issues/511)) ([bdeb793](https://github.com/EveryInc/compound-engineering-plugin/commit/bdeb7935fcdb147b73107177769c2e968463d93f))
+* **ce-ideate,ce-review:** reduce token cost and latency ([#515](https://github.com/EveryInc/compound-engineering-plugin/issues/515)) ([f4e0904](https://github.com/EveryInc/compound-engineering-plugin/commit/f4e09044ba4073f9447d783bfb7a72326ff7bf6b))
+* **document-review:** promote pattern-resolved findings to auto ([#507](https://github.com/EveryInc/compound-engineering-plugin/issues/507)) ([b223e39](https://github.com/EveryInc/compound-engineering-plugin/commit/b223e39a6374566fcc4ae269811d62a2e97c4827))
+* **document-review:** reduce token cost and latency ([#509](https://github.com/EveryInc/compound-engineering-plugin/issues/509)) ([9da73a6](https://github.com/EveryInc/compound-engineering-plugin/commit/9da73a60919bfc025efc2ca8b4000c45a7a27b42))
+* **git-commit-push-pr:** simplify PR probe pre-resolution ([#513](https://github.com/EveryInc/compound-engineering-plugin/issues/513)) ([f6544eb](https://github.com/EveryInc/compound-engineering-plugin/commit/f6544eba0e6851b8772bb9920583ffda5c80cccc))
+
 ## [2.62.0](https://github.com/EveryInc/compound-engineering-plugin/compare/compound-engineering-v2.61.0...compound-engineering-v2.62.0) (2026-04-03)
 
 

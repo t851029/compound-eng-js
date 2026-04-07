@@ -6,7 +6,7 @@ AI-powered development tools that get smarter with every use. Make each unit of 
 
 | Component | Count |
 |-----------|-------|
-| Agents | 35+ |
+| Agents | 50+ |
 | Skills | 40+ |
 
 ## Skills
@@ -19,7 +19,7 @@ The primary entry points for engineering work, invoked as slash commands:
 |-------|-------------|
 | `/ce:ideate` | Discover high-impact project improvements through divergent ideation and adversarial filtering |
 | `/ce:brainstorm` | Explore requirements and approaches before planning |
-| `/ce:plan` | Transform features into structured implementation plans grounded in repo patterns, with automatic confidence checking |
+| `/ce:plan` | Create structured plans for any multi-step task -- software features, research workflows, events, study plans -- with automatic confidence checking |
 | `/ce:review` | Structured code review with tiered persona agents, confidence gating, and dedup pipeline |
 | `/ce:work` | Execute work items systematically |
 | `/ce:compound` | Document solved problems to compound team knowledge |
@@ -150,6 +150,7 @@ Agents are specialized subagents invoked by skills — you typically don't call 
 | `issue-intelligence-analyst` | Analyze GitHub issues to surface recurring themes and pain patterns |
 | `learnings-researcher` | Search institutional learnings for relevant past solutions |
 | `repo-research-analyst` | Research repository structure and conventions |
+| `slack-researcher` | Search Slack for organizational context relevant to the current task |
 
 ### Design
 
