@@ -6,3 +6,4 @@ todos/
 .worktrees
 .claude/settings.local.json
 .context/
+.claude/worktrees/

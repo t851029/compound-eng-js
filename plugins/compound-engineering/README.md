@@ -24,6 +24,12 @@ The primary entry points for engineering work, invoked as slash commands:
 | `/ce:work` | Execute work items systematically |
 | `/ce:compound` | Document solved problems to compound team knowledge |
 | `/ce:compound-refresh` | Refresh stale or drifting learnings and decide whether to keep, update, replace, or archive them |
+### Research & Context
+
+| Skill | Description |
+|-------|-------------|
+| `/ce-sessions` | Ask questions about session history across Claude Code, Codex, and Cursor |
+| `/ce-slack-research` | Search Slack for interpreted organizational context -- decisions, constraints, and discussion arcs |
 
 ### Git Workflow
 
@@ -47,6 +53,7 @@ The primary entry points for engineering work, invoked as slash commands:
 | `/test-browser` | Run browser tests on PR-affected pages |
 | `/test-xcode` | Build and test iOS apps on simulator using XcodeBuildMCP |
 | `/onboarding` | Generate `ONBOARDING.md` to help new contributors understand the codebase |
+| `/ce-update` | Check compound-engineering plugin version and fix stale cache (Claude Code only) |
 | `/todo-resolve` | Resolve todos in parallel |
 | `/todo-triage` | Triage and prioritize pending todos |
 
@@ -82,7 +89,6 @@ The primary entry points for engineering work, invoked as slash commands:
 |-------|-------------|
 | `agent-browser` | CLI-based browser automation using Vercel's agent-browser |
 | `gemini-imagegen` | Generate and edit images using Google's Gemini API |
-| `orchestrating-swarms` | Comprehensive guide to multi-agent swarm orchestration |
 | `rclone` | Upload files to S3, Cloudflare R2, Backblaze B2, and cloud storage |
 
 ### Beta / Experimental
@@ -90,7 +96,6 @@ The primary entry points for engineering work, invoked as slash commands:
 | Skill | Description |
 |-------|-------------|
 | `/lfg` | Full autonomous engineering workflow |
-| `/slfg` | Full autonomous workflow with swarm mode for parallel execution |
 
 ## Agents
 
@@ -150,6 +155,7 @@ Agents are specialized subagents invoked by skills — you typically don't call 
 | `issue-intelligence-analyst` | Analyze GitHub issues to surface recurring themes and pain patterns |
 | `learnings-researcher` | Search institutional learnings for relevant past solutions |
 | `repo-research-analyst` | Research repository structure and conventions |
+| `session-historian` | Search prior Claude Code, Codex, and Cursor sessions for related investigation context |
 | `slack-researcher` | Search Slack for organizational context relevant to the current task |
 
 ### Design
