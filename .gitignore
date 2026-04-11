@@ -7,3 +7,5 @@ todos/
 .claude/settings.local.json
 .context/
 .claude/worktrees/
+
+.compound-engineering/*.local.yaml
