@@ -64,6 +64,7 @@ For `/ce-optimize`, see [`skills/ce-optimize/README.md`](./skills/ce-optimize/RE
 | `/onboarding` | Generate `ONBOARDING.md` to help new contributors understand the codebase |
 | `/ce-setup` | Diagnose environment, install missing tools, and bootstrap project config |
 | `/ce-update` | Check compound-engineering plugin version and fix stale cache (Claude Code only) |
+| `/ce:release-notes` | Summarize recent compound-engineering plugin releases, or answer a question about a past release with a version citation |
 | `/todo-resolve` | Resolve todos in parallel |
 | `/todo-triage` | Triage and prioritize pending todos |
 
@@ -81,7 +82,6 @@ For `/ce-optimize`, see [`skills/ce-optimize/README.md`](./skills/ce-optimize/RE
 
 | Skill | Description |
 |-------|-------------|
-| `claude-permissions-optimizer` | Optimize Claude Code permissions from session history |
 | `document-review` | Review documents using parallel persona agents for role-specific feedback |
 
 ### Content & Collaboration
@@ -102,6 +102,7 @@ For `/ce-optimize`, see [`skills/ce-optimize/README.md`](./skills/ce-optimize/RE
 
 | Skill | Description |
 |-------|-------------|
+| `/ce:polish-beta` | Human-in-the-loop polish phase after /ce:review — verifies review + CI, starts a dev server from `.claude/launch.json`, generates a testable checklist, and dispatches polish sub-agents for fixes. Emits stacked-PR seeds for oversized work |
 | `/lfg` | Full autonomous engineering workflow |
 
 ## Agents
