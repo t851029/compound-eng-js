@@ -16,7 +16,7 @@ This workflow produces a durable implementation plan. It does **not** implement 
 
 ## Interaction Method
 
-Use the platform's question tool when available. When asking the user a question, prefer the platform's blocking question tool if one exists (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini). Otherwise, present numbered options in chat and wait for the user's reply before proceeding.
+When asking the user a question, use the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini. Fall back to numbered options in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question.
 
 Ask one question at a time. Prefer a concise single-select choice when natural options exist.
 
@@ -174,8 +174,8 @@ Prepare a concise planning context summary (a paragraph or two) to pass as input
 
 Run these agents in parallel:
 
-- Task research:ce-repo-research-analyst(Scope: technology, architecture, patterns. {planning context summary})
-- Task research:ce-learnings-researcher(planning context summary)
+- Task ce-repo-research-analyst(Scope: technology, architecture, patterns. {planning context summary})
+- Task ce-learnings-researcher(planning context summary)
 Collect:
 - Technology stack and versions (used in section 1.2 to make sharper external research decisions)
 - Architectural patterns and conventions to follow
@@ -185,7 +185,7 @@ Collect:
 
 **Slack context** (opt-in) — never auto-dispatch. Route by condition:
 
-- **Tools available + user asked**: Dispatch `research:ce-slack-researcher` with the planning context summary in parallel with other Phase 1.1 agents. If the origin document has a Slack context section, pass it verbatim so the researcher focuses on gaps. Include findings in consolidation.
+- **Tools available + user asked**: Dispatch `ce-slack-researcher` with the planning context summary in parallel with other Phase 1.1 agents. If the origin document has a Slack context section, pass it verbatim so the researcher focuses on gaps. Include findings in consolidation.
 - **Tools available + user didn't ask**: Note in output: "Slack tools detected. Ask me to search Slack for organizational context at any point, or include it in your next prompt."
 - **No tools + user asked**: Note in output: "Slack context was requested but no Slack tools are available. Install and authenticate the Slack plugin to enable organizational context search."
 
@@ -243,8 +243,8 @@ Announce the decision briefly before continuing. Examples:
 
 If Step 1.2 indicates external research is useful, run these agents in parallel:
 
-- Task research:ce-best-practices-researcher(planning context summary)
-- Task research:ce-framework-docs-researcher(planning context summary)
+- Task ce-best-practices-researcher(planning context summary)
+- Task ce-framework-docs-researcher(planning context summary)
 
 #### 1.4 Consolidate Research
 
@@ -272,7 +272,7 @@ This ensures flow analysis (Phase 1.5) runs and the confidence check (Phase 5.3)
 
 For **Standard** or **Deep** plans, or when user flow completeness is still unclear, run:
 
-- Task workflow:ce-spec-flow-analyzer(planning context summary, research findings)
+- Task ce-spec-flow-analyzer(planning context summary, research findings)
 
 Use the output to:
 - Identify missing edge cases, state transitions, or handoff gaps
@@ -406,6 +406,8 @@ Examples:
 - Refactors that may become unnecessary once implementation starts
 
 ### Phase 4: Write the Plan
+
+**NEVER CODE during this skill.** Research, decide, and write the plan — do not start implementation.
 
 Use one planning philosophy across all depths. Change the amount of detail, not the boundary between planning and execution.
 
@@ -723,7 +725,7 @@ Build a risk profile. Treat these as high-risk signals:
 - **Deep** or high-risk plans often benefit from a targeted second pass
 - **Thin local grounding override:** If Phase 1.2 triggered external research because local patterns were thin (fewer than 3 direct examples or adjacent-domain match), always proceed to scoring regardless of how grounded the plan appears. When the plan was built on unfamiliar territory, claims about system behavior are more likely to be assumptions than verified facts. The scoring pass is cheap — if the plan is genuinely solid, scoring finds nothing and exits quickly
 
-If the plan already appears sufficiently grounded and the thin-grounding override does not apply, report "Confidence check passed — no sections need strengthening" and skip to Phase 5.3.8 (Document Review). Document-review always runs regardless of whether deepening was needed — the two tools catch different classes of issues.
+If the plan already appears sufficiently grounded and the thin-grounding override does not apply, report "Confidence check passed — no sections need strengthening", then **load `references/plan-handoff.md` now and execute 5.3.8 → 5.3.9 → 5.4 in sequence**. Document review is mandatory — do not skip it because the confidence check passed. The two tools catch different classes of issues.
 
 ##### 5.3.3–5.3.7 Deepening Execution
 
@@ -731,6 +733,20 @@ When deepening is warranted, read `references/deepening-workflow.md` for confide
 
 ##### 5.3.8–5.4 Document Review, Final Checks, and Post-Generation Options
 
-When reaching this phase, read `references/plan-handoff.md` for document review instructions (5.3.8), final checks and cleanup (5.3.9), post-generation options menu (5.4), and issue creation. Do not load this file earlier. Document review is mandatory — do not skip it even if the confidence check already ran.
+**Load `references/plan-handoff.md` now.** It contains the full instructions for 5.3.8 (document review), 5.3.9 (final checks and cleanup), and 5.4 (post-generation handoff, including the Proof HITL flow, post-HITL re-review, and Issue Creation branching). Document review is mandatory — do not skip it even if the confidence check already ran.
 
-NEVER CODE! Research, decide, and write the plan.
+After document review and final checks, present this menu using the platform's blocking question tool: `AskUserQuestion` in Claude Code (call `ToolSearch` with `select:AskUserQuestion` first if its schema isn't loaded), `request_user_input` in Codex, `ask_user` in Gemini. Fall back to numbered options in chat only when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes) — not because a schema load is required. Never silently skip the question.
+
+**Question:** "Plan ready at `docs/plans/YYYY-MM-DD-NNN-<type>-<name>-plan.md`. What would you like to do next?"
+
+**Options:**
+1. **Start `/ce-work`** (recommended) - Begin implementing this plan in the current session
+2. **Create Issue** - Create a tracked issue from this plan in your configured issue tracker (GitHub or Linear)
+3. **Open in Proof (web app) — review and comment to iterate with the agent** - Open the doc in Every's Proof editor, iterate with the agent via comments, or copy a link to share with others
+4. **Done for now** - Pause; the plan file is saved and can be resumed later
+
+Routing each selection, contextual surfacing of residual document-review findings, and the post-HITL resync logic all live in `references/plan-handoff.md` — follow it for every branch.
+
+**Completion check:** This skill is not complete until the post-generation menu above has been presented and the user has selected an action. If you have written the plan file and have not yet presented the menu, you are not done — go to the load instruction above and continue.
+
+**Pipeline mode exception:** In LFG, SLFG, or any `disable-model-invocation` context, skip the interactive menu and return control to the caller after the plan file is written, confidence check has run, and `ce-doc-review` has run in headless mode (per `references/plan-handoff.md`).

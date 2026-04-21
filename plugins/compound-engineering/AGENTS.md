@@ -14,7 +14,10 @@ The repo uses an automated release process to prepare plugin releases, including
 ### Contributor Rules
 
 - Do **not** manually bump `.claude-plugin/plugin.json` version in a normal feature PR.
+- Do **not** manually bump `.cursor-plugin/plugin.json` version in a normal feature PR.
+- Do **not** manually bump `.codex-plugin/plugin.json` version in a normal feature PR — release-please owns this via `extra-files` in `.github/release-please-config.json`, parallel to the Claude and Cursor entries.
 - Do **not** manually bump `.claude-plugin/marketplace.json` plugin version in a normal feature PR.
+- Do **not** hand-edit `.agents/plugins/marketplace.json` except to add or remove a plugin. Plugin-list, name, and description drift between the Claude, Cursor, and Codex marketplaces is caught by `bun run release:validate`.
 - Do **not** cut a release section in the canonical root `CHANGELOG.md` for a normal feature PR.
 - Do update substantive docs that are part of the actual change, such as `README.md`, component tables, usage instructions, or counts when they would otherwise become inaccurate.
 
@@ -23,8 +26,11 @@ The repo uses an automated release process to prepare plugin releases, including
 Before committing ANY changes:
 
 - [ ] No manual release-version bump in `.claude-plugin/plugin.json`
+- [ ] No manual release-version bump in `.cursor-plugin/plugin.json`
+- [ ] No manual release-version bump in `.codex-plugin/plugin.json`
 - [ ] No manual release-version bump in `.claude-plugin/marketplace.json`
 - [ ] No manual release entry added to the root `CHANGELOG.md`
+- [ ] `bun run release:validate` passes (enforces Claude/Cursor/Codex manifest parity)
 - [ ] README.md component counts verified
 - [ ] README.md tables accurate (agents, commands, skills)
 - [ ] plugin.json description matches current counts
@@ -33,16 +39,14 @@ Before committing ANY changes:
 
 ```
 agents/
-├── review/           # Code review agents
-├── document-review/  # Plan and requirements document review agents
-├── research/         # Research and analysis agents
-├── design/           # Design and UI agents
-└── docs/             # Documentation agents
+└── ce-*.agent.md  # All agents live flat under agents/, prefixed with ce-
 
 skills/
 ├── ce-*/          # Core workflow skills (ce-plan, ce-code-review, etc.)
 └── */             # All other skills
 ```
+
+Agents are grouped topically in `README.md` (Review, Document Review, Research, Design, Workflow, Docs) for reader navigation — those groupings are conceptual, not filesystem subdirectories.
 
 > **Note:** Commands were migrated to skills in v2.39.0. All former
 > `/command-name` slash commands now live under `skills/command-name/SKILL.md`
@@ -68,7 +72,7 @@ Important: Just because the developer's installed plugin may be out of date, it'
 
 **Why `ce-`?** Claude Code has built-in `/plan` and `/review` commands. The `ce-` prefix (short for compound-engineering) makes it immediately clear these components belong to this plugin. The hyphen is used instead of a colon to avoid filesystem issues on Windows and to align directory names with frontmatter names.
 
-**Agents** follow the same convention: `ce-adversarial-reviewer`, `ce-learnings-researcher`, etc. When referencing agents from skills, use the category-qualified format: `<category>:ce-<agent-name>` (e.g., `review:ce-adversarial-reviewer`).
+**Agents** follow the same convention: `ce-adversarial-reviewer`, `ce-learnings-researcher`, etc. When referencing agents from skills, use the bare `ce-<agent-name>` form (e.g., `ce-adversarial-reviewer`) — the `ce-` prefix is sufficient for uniqueness across plugins.
 
 ## Known External Limitations
 
@@ -118,7 +122,10 @@ Keep rationale at the highest-level location that covers it; restate behavioral 
 ### Cross-Platform User Interaction
 
 - [ ] When a skill needs to ask the user a question, instruct use of the platform's blocking question tool and name the known equivalents (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini)
-- [ ] Include a fallback for environments without a question tool (e.g., present numbered options and wait for the user's reply before proceeding)
+- [ ] For Claude Code, also instruct to load `AskUserQuestion` via `ToolSearch` with `select:AskUserQuestion` first if its schema isn't already loaded — `AskUserQuestion` is a deferred tool and won't be available at session start. A pending schema load is not a valid reason to fall back to text.
+- [ ] Include a fallback: when no blocking tool exists in the harness or the call errors (e.g., Codex edit modes where `request_user_input` is unavailable, or `ToolSearch` returns no match), present numbered options in chat and wait for the user's reply — never silently skip the question.
+
+> **Platform-behavior note (April 2026, may change):** The specifics above reflect current behavior — `AskUserQuestion` is deferred in Claude Code, and `request_user_input` in Codex is exposed only in Plan mode. If Anthropic changes `AskUserQuestion` to a non-deferred tool, or Codex exposes `request_user_input` in edit modes, revisit this guidance rather than carrying the workaround forward indefinitely. Verify before assuming these constraints still hold.
 
 ### Interactive Question Tool Design
 
@@ -204,7 +211,24 @@ grep -E '^description:' skills/*/SKILL.md
 ## Adding Components
 
 - **New skill:** Create `skills/<name>/SKILL.md` with required YAML frontmatter (`name`, `description`). Reference files go in `skills/<name>/references/`. Add the skill to the appropriate category table in `README.md` and update the skill count.
-- **New agent:** Create `agents/<category>/<name>.md` with frontmatter. Categories: `review`, `document-review`, `research`, `design`, `docs`, `workflow`. Add the agent to `README.md` and update the agent count.
+- **New agent:** Create `agents/ce-<name>.agent.md` with frontmatter (the `ce-` prefix is required). Add the agent to the appropriate topical section of `README.md` (Review, Document Review, Research, Design, Workflow, Docs) and update the agent count.
+
+### Adding a New Plugin to This Repo
+
+When adding a new plugin alongside `compound-engineering` and `coding-tutor`, the repo ships to three marketplace formats (Claude, Cursor, Codex). All three must stay in parity or `bun run release:validate` will fail on next run. Checklist:
+
+- [ ] `.claude-plugin/marketplace.json` — add the plugin to `plugins[]`
+- [ ] `.cursor-plugin/marketplace.json` — add the plugin to `plugins[]`
+- [ ] `.agents/plugins/marketplace.json` — add the plugin to `plugins[]` (Codex schema: nested `source: { source: "local", path: "./plugins/<name>" }`, `policy`, `category`)
+- [ ] `plugins/<name>/.claude-plugin/plugin.json` — create with `name`, `version`, `description`
+- [ ] `plugins/<name>/.cursor-plugin/plugin.json` — create with matching `name`, `version`, `description`
+- [ ] `plugins/<name>/.codex-plugin/plugin.json` — create with matching `name`, `version`, `description`, plus Codex-specific fields (`skills: "./skills/"` if skills exist, plus `interface{}` block)
+- [ ] `.github/release-please-config.json` — add a `plugins/<name>` package entry with `extra-files` for all three plugin.json paths
+- [ ] `.github/.release-please-manifest.json` — add the initial version entry for the new package
+- [ ] `src/release/metadata.ts` — extend `syncReleaseMetadata` with a cross-check target for the new plugin (follow the `codexPluginTargets` pattern)
+- [ ] Run `bun run release:validate` and confirm it reports the new manifests without drift
+
+The validator enforces: plugin-list parity across all three marketplaces, name/version/description parity across each plugin's three plugin.json files, and existence of any `skills:` directory declared in the Codex manifest. Note that only `description` drift is auto-corrected on `write: true` — version drift is detect-only because release-please owns the write.
 
 ## Beta Skills
 
@@ -215,6 +239,10 @@ Beta skills use a `-beta` suffix and `disable-model-invocation: true` to prevent
 ### Stable/Beta Sync
 
 When modifying a skill that has a `-beta` counterpart (or vice versa), always check the other version and **state your sync decision explicitly** before committing — e.g., "Propagated to beta — shared test guidance" or "Not propagating — this is the experimental delegate mode beta exists to test." Syncing to both, stable-only, and beta-only are all valid outcomes. The goal is deliberate reasoning, not a default rule.
+
+## Documented Solutions
+
+`docs/solutions/` holds documented solutions to past problems — bugs, architecture patterns, design patterns, tooling decisions, conventions, workflow practices, and other institutional knowledge. Entries use YAML frontmatter with fields including `module`, `tags`, and `problem_type`. Knowledge-track `problem_type` values are `architecture_pattern`, `design_pattern`, `tooling_decision`, `convention`, `workflow_issue`, `developer_experience`, `documentation_gap`, and `best_practice` (fallback). Bug-track values cover `build_error`, `test_failure`, `runtime_error`, `performance_issue`, `database_issue`, `security_issue`, `ui_bug`, `integration_issue`, and `logic_error`. Search this directory before designing new solutions so institutional memory compounds across changes.
 
 ## Documentation
 

@@ -7,5 +7,7 @@ todos/
 .claude/settings.local.json
 .context/
 .claude/worktrees/
+__pycache__/
+*.pyc
 
 .compound-engineering/*.local.yaml
