@@ -25,8 +25,8 @@ The chain works across domains — every step supports universal mode. `ce-ideat
 |----------|--------|
 | What does it do? | Grounds in real material, decomposes the topic into orthogonal axes, generates candidates across six conceptual frames spread over those axes, critiques them adversarially, presents 5-7 survivors — each with a tagged basis |
 | When to use it | Greenfield exploration, big-picture thinking, codebase audits, surprise-me runs, naming, decisions, business strategy — any domain where you want a qualified candidate set rather than a refined idea |
-| What it produces | Ranked ideation artifact in `docs/ideation/` (or to Proof for non-software topics) |
-| What's next | `/ce-brainstorm` on a chosen survivor — or save and walk away |
+| What it produces | Ranked ideation artifact written as a single self-contained HTML file by default (humans are the audience — rich, openable in a browser); pass `output:md` for markdown. Written automatically to `docs/ideation/` when present, else an announced temp path under `/tmp/compound-engineering/` |
+| What's next | `/ce-brainstorm` on a chosen survivor, iterate on one first, or just keep the saved file |
 
 ---
 
@@ -58,7 +58,7 @@ Asking an AI "what's worth exploring here?" usually returns:
 
 ### 1. Comprehensive grounding before any idea is generated
 
-Every run starts with parallel grounding agents that supply the substance ideas will be qualified against — codebase scan (in repo mode), past institutional learnings from `docs/solutions/`, external prior art via web research, and optional Slack and issue intelligence when those tools are available. **External prior art is critical**: without it, the agent is just remixing what's already in your codebase or your head. With it, ideas can cite "this is how X solved this" — concrete, verifiable, named precedent.
+Every run starts with parallel grounding agents that supply the substance ideas will be qualified against — codebase scan (in repo mode), past institutional learnings from `docs/solutions/`, external prior art via web research, and optional Slack and issue intelligence when those tools are available. In repo mode, cheap **evidence scouts** then deepen the grounding: one per topic axis, each returning a dossier of verbatim quotes and `file:line` pointers, so ideation agents cite real code rather than a paraphrased summary. **External prior art is critical**: without it, the agent is just remixing what's already in your codebase or your head. With it, ideas can cite "this is how X solved this" — concrete, verifiable, named precedent.
 
 ### 2. Basis requirement — every idea cites its evidence
 
@@ -66,7 +66,7 @@ Each surviving candidate carries a tagged basis: `direct:` (quoted evidence), `e
 
 ### 3. Six-frame divergent generation
 
-Six parallel sub-agents, each biased toward a different generative frame: pain & friction, inversion/removal/automation, assumption-breaking, leverage & compounding, cross-domain analogy, and constraint-flipping. Single-prompt ideation collapses into the agent's most-trained directions — different frames force genuine breadth, especially cross-domain analogy and constraint-flipping which surface ideas no single prompt would.
+Parallel sub-agents cover six generative frames: pain & friction, inversion/removal/automation, assumption-breaking, leverage & compounding, cross-domain analogy, and constraint-flipping. Single-prompt ideation collapses into the agent's most-trained directions — different frames force genuine breadth, especially cross-domain analogy and constraint-flipping which surface ideas no single prompt would. The fleet is **cost-tiered**: evidence-driven frames run on a mid-tier model (the dossiers do the heavy lifting), while the ceiling frames — where the strong model's reasoning is the product — inherit the conversation's model. Say `go deep` to raise the whole fleet to the top tier.
 
 ### 4. Topic-surface decomposition — axis coverage as a dispatch invariant
 
@@ -74,7 +74,7 @@ Frames decide *how to think* about a topic; **axes** decide *what part of the to
 
 ### 5. Adversarial filtering with stated rejection reasons
 
-The orchestrator critiques every candidate against a consistent rubric — groundedness, basis strength, expected value, novelty, pragmatism, leverage, implementation burden, overlap. One-line reasons accompany every rejection. Survivors are presented alongside a rejection summary so you see what was considered and cut.
+Critique runs in two layers. A **fresh-context verifier** — an agent that never saw the generation — tries to refute each candidate: do cited quotes actually exist, is the named prior art real, does the argument hold? Then the orchestrator arbitrates the final cut against a consistent rubric — groundedness, basis strength, expected value, novelty, pragmatism, leverage, implementation burden, overlap. One-line reasons accompany every rejection. Survivors are presented alongside a rejection summary so you see what was considered and cut.
 
 ### 6. Three modes — software, software-product, and entirely non-software
 
@@ -92,11 +92,11 @@ Phrases like "what users are reporting" or "biggest issue patterns" trigger an i
 
 ## Quick Example
 
-You invoke `ce-ideate "DX improvements"` from inside a code repo. The agent announces it'll dispatch ~9 grounding and ideation agents and offers skip phrases for cost control.
+You invoke `ce-ideate "DX improvements"` from inside a code repo. The agent announces it'll dispatch ~13 agents — most on cheap tiers — and offers skip phrases for cost control.
 
-Grounding agents return in parallel — a codebase summary, relevant past learnings, external prior art on developer-experience patterns. The orchestrator decomposes the topic into 4-5 axes derived from that grounding (e.g., for "DX improvements" — feedback loops, environment friction, tooling ergonomics, knowledge accessibility, automation surface). Six ideation sub-agents then generate candidates from different frames, each tagged with the axis it targets. The orchestrator merges 40+ candidates into one list, synthesizes cross-cutting combinations, runs an axis-coverage check (any empty axis triggers one bounded recovery dispatch), and runs the adversarial critique pass — about 13 ideas are cut for being too vague, unjustified, or duplicative.
+Grounding agents return in parallel — a codebase summary, relevant past learnings, external prior art on developer-experience patterns. The orchestrator decomposes the topic into 4-5 axes derived from that grounding (e.g., for "DX improvements" — feedback loops, environment friction, tooling ergonomics, knowledge accessibility, automation surface), then cheap evidence scouts gather a quote-and-pointer dossier per axis. Five ideation sub-agents covering six frames generate candidates from that evidence, each idea tagged with the axis it targets and verified against the actual files before submission. The orchestrator merges 40+ candidates into one list, synthesizes cross-cutting combinations, runs an axis-coverage check (any empty axis triggers one bounded recovery dispatch), and runs the two-layer critique pass — a fresh-context verifier tries to refute each candidate, then the orchestrator makes the final cut. About 13 ideas are cut for being too vague, unjustified, refuted, or duplicative.
 
-You see six survivors spread across the axes. Each has a tagged basis (e.g., "tests/cli.test.ts:42 spawns 14 different bash invocations"), a rationale connecting that basis to the move's significance, the axis it targets, downsides, confidence, and complexity. A rejection summary lists what was cut and why, plus any axis that ended up uncovered as a deliberate gap. Then a four-option menu: refine in conversation, open in Proof, brainstorm a chosen survivor, or save and end.
+The full deliverable — all seven cards with basis, rationale, downsides, confidence, complexity, plus the rejection summary — is written automatically to a self-contained HTML file and opened in your browser; the session itself shows just a concise ranked summary and the path, so you read the rich version, not a wall of terminal text. Then a four-option next-steps menu: open it in the browser, brainstorm one idea with `ce-brainstorm`, iterate on one idea (adjust or ask, staying here), or done. (Markdown runs swap "open in browser" for "open and iterate in Proof".)
 
 ---
 
@@ -137,7 +137,7 @@ Skip `ce-ideate` when:
 /ce-work              "Build it."
 ```
 
-Each artifact is structured input for the next: the survivor's basis carries forward as the brainstorm's evidence base; the brainstorm's decisions flow into the plan's requirements and scope; the plan's U-IDs and test scenarios become the guardrails `ce-work` executes against. When you select "Brainstorm a chosen idea" in the Phase 4 menu, the survivor is saved (with status `Explored`) and `ce-brainstorm` loads with that idea as the seed.
+Each artifact is structured input for the next: the survivor's basis carries forward as the brainstorm's evidence base; the brainstorm's decisions flow into the plan's requirements and scope; the plan's U-IDs and test scenarios become the guardrails `ce-work` executes against. When you pick "Brainstorm one idea" in the next-steps menu, `ce-brainstorm` loads with that idea as a substance seed (its basis, rationale, and tradeoffs) — the ideation file is already saved.
 
 The chain runs in non-software domains too — ideating on weekend-trip directions feeds a brainstorm that defines the trip, which feeds a plan that structures bookings, packing, and itinerary as guardrails.
 
@@ -145,7 +145,7 @@ The chain runs in non-software domains too — ideating on weekend-trip directio
 
 ## Use Standalone
 
-`ce-ideate` is a complete ideation cycle on its own. The terminal review loop produces a usable idea set with reasons; persistence is opt-in.
+`ce-ideate` is a complete ideation cycle on its own — it produces a ranked, reasoned idea set as a saved file you can open, share, brainstorm from, or discard.
 
 **Software:**
 
@@ -162,7 +162,7 @@ The chain runs in non-software domains too — ideating on weekend-trip directio
 - **Business strategy** — go-to-market, positioning against a competitor
 - **Travel and events** — trip themes, wedding-venue concepts
 
-Refining without persisting is fully supported — pick "Refine in conversation" and stop the chat when you're done. Nothing is written.
+The deliverable is written automatically — you don't have to ask. If a run was purely exploratory and you don't want it kept, say "discard" and the file is deleted.
 
 ---
 
@@ -175,7 +175,9 @@ Refining without persisting is fully supported — pick "Refine in conversation"
 | `<path>` | a directory or file to focus on |
 | `<constraint>` | e.g., `low-complexity quick wins`, `polish-only` |
 | `surprise me` | Surprise-me mode |
+| `go deep` | Maximum depth: every ideation agent runs on the top-tier model, verification budgets double, and a second critic joins the filtering pass |
 | `top issue themes in <area>` | Triggers issue-tracker intent |
+| `output:md` | Write the artifact as markdown instead of the default self-contained HTML (`output:html` forces HTML explicitly). Also settable per-project via `ideate_output` in `.compound-engineering/config.local.yaml` |
 
 Skip phrases supported anywhere in the prompt: `no external research`, `no slack`.
 
@@ -192,8 +194,8 @@ Without a basis, plausible-sounding ideas pass through unfiltered. The basis req
 **Does it really work for non-software topics?**
 Yes. The same generate-critique-survive engine runs in domain-native language for naming, narrative, personal decisions, and business strategy. Codebase grounding is replaced by user-context synthesis and external research.
 
-**What if I just want to refine ideas in conversation, not save?**
-Pick "Refine the ideation in conversation" in the Phase 4 menu. The terminal review loop is a complete cycle. Persistence is opt-in.
+**What if I want to tweak an idea before committing to a brainstorm?**
+Pick "Iterate on one idea" — name the idea and how you want to change it (adjust its scope, ask questions, go deeper). Adjustments update the saved file; pure Q&A doesn't. The file is written automatically, so if you didn't want it kept, just say "discard".
 
 **What if my prompt is ambiguous?**
 A subject-identification gate asks one scope question when the prompt refers only to a quality (`improvements`, `quick wins`) rather than a specific thing. "Surprise me" is offered as a real option, not a fallback.
@@ -205,5 +207,5 @@ A subject-identification gate asks one scope question when the prompt refers onl
 - [`ce-brainstorm`](./ce-brainstorm.md) — once you've picked a survivor, brainstorm the chosen direction into a requirements doc
 - [`ce-plan`](./ce-plan.md) — once requirements are clear, plan the implementation
 - [`ce-strategy`](./ce-strategy.md) — anchor ideation to a documented product strategy
-- [`ce-doc-review`](./ce-doc-review.md) — review the saved ideation artifact for clarity and completeness
-- [`ce-proof`](./ce-proof.md) — open the artifact in Proof for collaborative iteration
+- [`ce-doc-review`](./ce-doc-review.md) — review the saved ideation artifact for clarity and completeness (markdown output only — run with `output:md` first)
+- [`ce-proof`](./ce-proof.md) — open the artifact in Proof for collaborative iteration (markdown output only — Proof can't ingest HTML)
